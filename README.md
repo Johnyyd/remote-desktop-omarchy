@@ -25,7 +25,7 @@ Thêm người dùng hiện tại vào nhóm `input`:
 
 ```bash
 sudo usermod -aG input "$USER"
-
+sudo usermod -aG video,render "$USER"
 ```
 
 Tạo quy tắc udev để cấp quyền truy cập input:
