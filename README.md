@@ -1,33 +1,68 @@
-Setup: Sunshine + Moonlight + Tailscale on Omarchy
+# Hướng dẫn thiết lập: Sunshine + Moonlight + Tailscale trên Omarchy
 
-1 — Install Sunshine (on the Omarchy host)
-Add the LizardByte repo to /etc/pacman.conf:
+## 1 - Cài đặt Sunshine (trên máy Host Omarchy)
 
+Thêm kho lưu trữ LizardByte vào tệp `/etc/pacman.conf`:
+
+```ini
 [lizardbyte]
 SigLevel = Optional
 Server = https://github.com/LizardByte/pacman-repo/releases/latest/download
 
+```
+
+Cập nhật hệ thống và cài đặt Sunshine:
+
+```bash
 sudo pacman -Sy
 sudo pacman -S sunshine
 
-2 — Permissions (required for Wayland capture + input)
+```
+
+## 2 - Phân quyền (Yêu cầu cho Wayland capture + input)
+
+Thêm người dùng hiện tại vào nhóm `input`:
+
+```bash
 sudo usermod -aG input "$USER"
 
+```
+
+Tạo quy tắc udev để cấp quyền truy cập input:
+
+```bash
 sudo tee /etc/udev/rules.d/85-sunshine-input.rules >/dev/null <<'EOF'
 KERNEL=="uinput", SUBSYSTEM=="misc", OPTIONS+="static_node=uinput", TAG+="uaccess", GROUP="input", MODE="0660"
 EOF
 
+```
+
+Tải lại quy tắc udev và kích hoạt:
+
+```bash
 sudo udevadm control --reload-rules
 sudo udevadm trigger
 
-Log out and back in so the input group takes effect. 
+```
 
-3 — Start Sunshine & configure
+> **Lưu ý:** Đăng xuất và đăng nhập lại để nhóm `input` có hiệu lực.
+
+## 3 - Khởi chạy & Cấu hình Sunshine
+
+Khởi động Sunshine:
+
+```bash
 sunshine
 
-A URL like https://localhost:47990 will print. Open it, set a username/password, and note the pairing PIN it displays. 
+```
 
-4 — Auto-start Sunshine on login
+Một URL (ví dụ: `https://localhost:47990`) sẽ xuất hiện trên terminal. Mở URL này trên trình duyệt, thiết lập **Username/Password**, và ghi chú lại mã PIN ghép nối (pairing PIN) được hiển thị.
+
+## 4 - Tự động khởi chạy Sunshine khi đăng nhập
+
+Tạo thư mục autostart và file cấu hình desktop:
+
+```bash
 mkdir -p ~/.config/autostart
 cat > ~/.config/autostart/sunshine.desktop <<'EOF'
 [Desktop Entry]
@@ -37,29 +72,57 @@ Exec=sunshine
 Terminal=false
 EOF
 
-5 — Install Tailscale on both machines
-# Host (Omarchy) and client (Mac/phone/another PC)
+```
+
+## 5 - Cài đặt Tailscale trên cả hai máy
+
+Thực hiện trên máy Host (Omarchy) và máy Client (Mac/điện thoại/PC khác):
+
+```bash
 curl -fsSL https://tailscale.com/install.sh | sh
 sudo tailscale up
 
-Get the host's Tailscale IP:
+```
 
+Lấy địa chỉ IP Tailscale của máy Host:
+
+```bash
 tailscale ip -4
 
-6 — Install Moonlight client & connect
-Mac: brew install --cask moonlight (or App Store)
-Steam Deck: Discover Store → Moonlight
-Phone: App Store / Play Store
-Linux: yay -S moonlight-qt 
-In Moonlight: Add Host → enter the Tailscale IP → enter the pairing PIN from step 3 → done. 
+```
 
-7 — Firewall (if using ufw)
+## 6 - Cài đặt Moonlight Client & Kết nối
+
+Cài đặt ứng dụng Moonlight tương ứng với thiết bị Client của bạn:
+
+* **Mac:** `brew install --cask moonlight` (hoặc tải từ App Store)
+* **Steam Deck:** Discover Store → Tìm "Moonlight"
+* **Điện thoại:** App Store / Play Store
+* **Linux:** `yay -S moonlight-qt`
+
+**Thiết lập trong Moonlight:**
+
+1. Chọn **Add Host**
+2. Nhập **IP Tailscale** của máy Host (đã lấy ở bước 5)
+3. Nhập **mã PIN ghép nối** (từ bước 3)
+4. Hoàn tất.
+
+## 7 - Cấu hình Tường lửa (Nếu sử dụng UFW)
+
+Mở các cổng cần thiết cho Sunshine thông qua giao diện Tailscale:
+
+```bash
 sudo ufw allow in on tailscale0 to any port 47984:47990 proto tcp
 sudo ufw allow in on tailscale0 to any port 48010 proto tcp
 sudo ufw allow in on tailscale0 to any port 47998:48000 proto udp
 
-Tips
+```
 
-For multi-monitor, select "All Monitors" in Moonlight (not "Desktop"). 
-For clipboard sync (Mac ↔ Linux): copy on Mac, then Ctrl+Alt+Shift+V inside Moonlight. 
-A one-shot installer that automates steps 1–4 is at omarchy-moonlight — just ./install.sh. 
+---
+
+## 💡 Mẹo hữu ích
+
+* **Đa màn hình:** Đối với thiết lập nhiều màn hình, hãy chọn "All Monitors" trong Moonlight (không chọn "Desktop").
+* **Đồng bộ Clipboard (Mac ↔ Linux):** Copy trên Mac, sau đó nhấn `Ctrl+Alt+Shift+V` bên trong cửa sổ Moonlight.
+* **Cài đặt tự động:** Có sẵn một script tự động hóa các bước 1–4 tại kho lưu trữ `omarchy-moonlight` — chỉ cần chạy lệnh `./install.sh`.
+
