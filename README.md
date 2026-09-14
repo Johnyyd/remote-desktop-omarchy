@@ -125,4 +125,3 @@ sudo ufw allow in on tailscale0 to any port 47998:48000 proto udp
 * **Đa màn hình:** Đối với thiết lập nhiều màn hình, hãy chọn "All Monitors" trong Moonlight (không chọn "Desktop").
 * **Đồng bộ Clipboard (Mac ↔ Linux):** Copy trên Mac, sau đó nhấn `Ctrl+Alt+Shift+V` bên trong cửa sổ Moonlight.
 * **Cài đặt tự động:** Có sẵn một script tự động hóa các bước 1–4 tại kho lưu trữ `omarchy-moonlight` — chỉ cần chạy lệnh `./install.sh`.
-
