@@ -21,11 +21,12 @@ sudo pacman -S sunshine
 
 ## 2 - Phân quyền (Yêu cầu cho Wayland capture + input)
 
-Thêm người dùng hiện tại vào nhóm `input`:
+Thêm người dùng hiện tại vào nhóm `input` và cấp quyền truy cập GPU:
 
 ```bash
 sudo usermod -aG input "$USER"
 sudo usermod -aG video,render "$USER"
+
 ```
 
 Tạo quy tắc udev để cấp quyền truy cập input:
@@ -45,9 +46,17 @@ sudo udevadm trigger
 
 ```
 
-> **Lưu ý:** Đăng xuất và đăng nhập lại để nhóm `input` có hiệu lực.
+> **Lưu ý:** Đăng xuất và đăng nhập lại để các nhóm quyền có hiệu lực.
 
-## 3 - Khởi chạy & Cấu hình Sunshine
+## 3 - Cấu hình chống crash & Khởi chạy Sunshine
+
+Để tránh tình trạng máy host bị đơ cứng (crash) do xung đột giữa driver card đồ họa AMD và Wayland compositor, hãy ép Sunshine sử dụng Software Encoder (tận dụng sức mạnh đa luồng của CPU Xeon):
+
+```bash
+mkdir -p ~/.config/sunshine
+echo "encoder = software" >> ~/.config/sunshine/sunshine.conf
+
+```
 
 Khởi động Sunshine:
 
@@ -120,8 +129,24 @@ sudo ufw allow in on tailscale0 to any port 47998:48000 proto udp
 
 ---
 
+## 8 - Khắc phục lỗi Client không có âm thanh
+
+Mặc định, Sunshine sẽ tự động ngắt âm thanh loa vật lý trên máy Host và tạo một "loa ảo" (`sink-sunshine-stereo`) để truyền sang Client. Nếu Client kết nối thành công nhưng bị mất tiếng, hãy thực hiện các bước sau trong lúc đang kết nối:
+
+1. Chạy 2 lệnh sau trên terminal của máy Host để mở khóa và kích âm lượng cho loa ảo:
+
+```bash
+pactl set-sink-mute sink-sunshine-stereo 0
+pactl set-sink-volume sink-sunshine-stereo 100%
+
+```
+
+2. **Khởi động lại ứng dụng phát đa phương tiện:** Các ứng dụng (như trình duyệt web, Youtube, Spotify...) đang mở từ trước có thể không tự nhận diện được loa ảo mới. Bạn cần **đóng hoàn toàn** ứng dụng đó và mở lại để luồng âm thanh được định tuyến chính xác.
+
+---
+
 ## 💡 Mẹo hữu ích
 
 * **Đa màn hình:** Đối với thiết lập nhiều màn hình, hãy chọn "All Monitors" trong Moonlight (không chọn "Desktop").
 * **Đồng bộ Clipboard (Mac ↔ Linux):** Copy trên Mac, sau đó nhấn `Ctrl+Alt+Shift+V` bên trong cửa sổ Moonlight.
-* **Cài đặt tự động:** Có sẵn một script tự động hóa các bước 1–4 tại kho lưu trữ `omarchy-moonlight` — chỉ cần chạy lệnh `./install.sh`.
+* **Cài đặt tự động:** Có sẵn một script tự động hóa tại kho lưu trữ `omarchy-moonlight` — chỉ cần chạy lệnh `./install.sh`.
